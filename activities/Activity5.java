@@ -1,0 +1,94 @@
+package activities;
+
+import static org.testng.Assert.assertEquals;
+
+import java.time.Duration;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
+
+//In the @BeforeClass method, create the a driver instance for FirefoxDriver
+//Also use the get() method to open the browser with https://training-support.net/webelements/login-form
+//In the @AfterClass method, use close() to close the browser once the test is done.
+//Add a @DataProviders method credentials() with the name parameter set to "Authentication".
+//Set the return type of the method as Object[][].
+//It should return two Objects with a username and a password each.
+//Write a @Test method, with the parameter dataProvider set to name of the @DataProvider method.
+//Add them as formal parameters for the test method.
+
+public class Activity5 {
+	//WebDriver declaration
+		WebDriver driver;
+		//WebDriverWait declaration
+		WebDriverWait wait;
+		
+		@BeforeClass
+		public void setUp() {
+			//Initialize driver
+			driver = new FirefoxDriver();
+			//Initialize wait
+			wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+			
+			//Open the page
+			driver.get("https://training-support.net/webelements/login-form/");
+		}
+		
+		@BeforeMethod
+		public void clearTextbox() {
+			driver.findElement(By.id("username")).clear();
+			driver.findElement(By.id("password")).clear();
+		}
+		
+		@Test(priority = 1)
+		public void verifyPageTitle() {
+			assertEquals(driver.getTitle(), "Selenium: Login Form");
+		}
+		
+		@DataProvider(name = "Authentication")
+		public static Object[][] credentials(){
+			return new Object[][] {
+				{"testUser1", "password1"},
+				{"testUser2", "password2"},
+				{"testUser3", "password3"},
+				{"testUser4", "password4"},
+				{"testUser5", "password5"}
+			};
+		}
+		
+		//test for invalid credentials
+		@Test(priority = 2, dataProvider="Authentication")
+		public void invalidCredentials(String username, String password) {
+			driver.findElement(By.id("username")).sendKeys(username);
+			driver.findElement(By.id("password")).sendKeys(password);
+			driver.findElement(By.cssSelector("button.svelte-1pdjkmx")).click();
+			String message = driver.findElement(By.id("subheading")).getText();
+			assertEquals(message, "Invalid credentials");
+		}
+		
+			//test for valid credentials
+			@Test(priority = 3)
+			public void validCredentials() {
+				WebElement username = driver.findElement(By.id("username"));
+				WebElement password = driver.findElement(By.id("password"));
+				username.clear();
+				username.sendKeys("admin");
+				password.clear();
+				password.sendKeys("password");
+				driver.findElement(By.cssSelector("button.svelte-1pdjkmx")).click();
+				String message = driver.getTitle();
+				assertEquals(message, "Selenium: Login Success!");
+			}
+			
+		@AfterClass
+		public void tearDown() {
+			driver.quit(); //browser will close even if there were errors
+		}
+}
